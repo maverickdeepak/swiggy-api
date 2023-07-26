@@ -10,6 +10,7 @@ class Server {
     // constroctor for initialize the menthods
     this.setConfig();
     this.setRoute();
+    this.errorHandler();
   }
 
   setConfig() {
@@ -23,12 +24,23 @@ class Server {
     });
   }
 
-  setRoute() {}
-
-  // calling the userRoutes
-  userRoutes() {
+  // routes
+  setRoute() {
     this.app.use("/api/user", userRoutes);
+  }
+
+  // error handler
+  errorHandler() {
+    this.app.use((error, req, res, next) => {
+      const statusCode = error.statusCode || 500;
+      res
+        .status(statusCode)
+        .json({
+          status: statusCode,
+          message: error.message || "something went wrong!",
+        });
+    });
   }
 }
 
-export default Server
+export default Server;
