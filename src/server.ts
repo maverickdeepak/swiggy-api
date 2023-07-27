@@ -3,6 +3,11 @@ import * as mongoose from "mongoose";
 import { getEnvironmentVar } from "./env/environment";
 import userRoutes from "./routes/userRoutes";
 
+interface Error {
+  status?: number;
+  message?: string;
+}
+
 class Server {
   public app: express.Application = express();
 
@@ -10,6 +15,7 @@ class Server {
     // constroctor for initialize the menthods
     this.setConfig();
     this.setRoute();
+    this.error404Handler();
     this.errorHandler();
   }
 
@@ -29,10 +35,19 @@ class Server {
     this.app.use("/api/user", userRoutes);
   }
 
+  // not found
+  error404Handler () {
+    this.app.use((req, res, next) => {
+      const error:Error = new Error('Route not found');
+      error.status = 404
+      next(error);
+    });
+  }
+
   // error handler
   errorHandler() {
-    this.app.use((error, req, res, next) => {
-      const statusCode = error.statusCode || 500;
+    this.app.use((error:Error, req, res, next) => {
+      const statusCode = error.status || 500;
       res
         .status(statusCode)
         .json({
@@ -40,6 +55,7 @@ class Server {
           message: error.message || "something went wrong!",
         });
     });
+    console.log("Hello")
   }
 }
 
